@@ -1,40 +1,99 @@
-import {Component} from 'react'
+import { FC } from 'react'
+import { Col, Row, Tag } from 'antd'
+import { CategoryToNameMapper, knownCategories } from '../dtos/Categories'
+import { NextRouter, useRouter } from 'next/router'
+import { convertArrayToQueryParam, removeRoutingQueryParams, updateRoutingQuery } from '../utils/utils'
+import { createSlugPathFromQueryAndRemoveSlug } from '../utils/slug'
+import { getTypeNamesFromRouterOrKnownCategoryNamesIfEmpty } from '../utils/router'
+import useTranslation from 'next-translate/useTranslation';
 
-import { Tag } from 'antd';
+const {CheckableTag} = Tag;
 
-const { CheckableTag } = Tag;
+const handleChange = (
+    typeName: string,
+    checked: boolean,
+    selectedTypes: string[],
+    router: NextRouter,
+) => {
+  const { query } = router
 
-const tagsData = ['Movies', 'Books', 'Music', 'Sports'];
+  let nextSelectedTypes = [] as string[]
+    if (selectedTypes.length === knownCategories.length) {
+        // if all are selected -> disable others
+        nextSelectedTypes = [typeName]
+    } else if (selectedTypes.length === 1 && selectedTypes[0] === typeName) {
+        // if this type is the only active type -> select all types to prevent non-selection
+        nextSelectedTypes = Object.values(knownCategories)
+    } else {
+        // everything is normal
+        if (checked) {
+            nextSelectedTypes = [...selectedTypes, typeName]
+        } else {
+            nextSelectedTypes = selectedTypes.filter((tName) => tName !== typeName)
+        }
 
-class TypeChooser extends Component {
-  state = {
-    selectedTags: ['Books'],
-  };
+        let newQueryParams = {};
+        if (nextSelectedTypes.length < knownCategories.length) {
+            newQueryParams = updateRoutingQuery(query, {
+                type: convertArrayToQueryParam(nextSelectedTypes),
+            });
+        } else {
+            // all tags are selected
+            newQueryParams = removeRoutingQueryParams(query, ['type']);
+        }
 
-  handleChange(tag, checked) {
-    const { selectedTags } = this.state;
-    const nextSelectedTags = checked ? [...selectedTags, tag] : selectedTags.filter(t => t !== tag);
-    console.log('You are interested in: ', nextSelectedTags);
-    this.setState({ selectedTags: nextSelectedTags });
-  }
+        const [newPath, newQueryWithoutSlug] =
+            createSlugPathFromQueryAndRemoveSlug(newQueryParams);
 
-  render() {
-    const { selectedTags } = this.state;
+        router.replace(
+            {
+                pathname: `/m/${newPath}`,
+                query: newQueryWithoutSlug,
+            },
+            undefined,
+            {shallow: true},
+        );
+    }
+};
+
+const TypeChooser: FC = () => {
+    const router = useRouter();
+    const selectedTypes =
+        getTypeNamesFromRouterOrKnownCategoryNamesIfEmpty(router);
+    const {t} = useTranslation('map');
+
     return (
-      <>
-        <span style={{ marginRight: 8 }}>Categories:</span>
-        {tagsData.map(tag => (
-          <CheckableTag
-            key={tag}
-            checked={selectedTags.indexOf(tag) > -1}
-            onChange={checked => this.handleChange(tag, checked)}
-          >
-            {tag}
-          </CheckableTag>
-        ))}
-      </>
+        <Row gutter={8}>
+            {knownCategories.map((category) => {
+                const categoryName = CategoryToNameMapper[category];
+                const isChecked = selectedTypes.indexOf(categoryName) > -1;
+                const textTag =
+                    t(`category.${categoryName}`) || categoryName;
+                return (
+                    <Col key={category} span={8}>
+                        <CheckableTag
+                            className={isChecked && `${categoryName}-tag`}
+                            checked={isChecked}
+                            onChange={(checked) =>
+                                handleChange(
+                                    categoryName,
+                                    checked,
+                                    selectedTypes,
+                                    router,
+                                )
+                            }
+                            style={{
+                                width: '100%',
+                                textAlign: 'center',
+                            }}
+                        >
+                            {textTag}
+                        </CheckableTag>
+                    </Col>
+                );
+            })}
+        </Row>
     );
-  }
 }
 
 

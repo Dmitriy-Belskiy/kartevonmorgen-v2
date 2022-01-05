@@ -1,5 +1,5 @@
-import React, {useState} from 'react'
-import {Input, AutoComplete} from 'antd'
+import React, { useState } from 'react'
+import { AutoComplete, Input } from 'antd'
 
 function getRandomInt(max, min = 0) {
   return Math.floor(Math.random() * (max - min + 1)) + min // eslint-disable-line no-mixed-operators
@@ -20,16 +20,16 @@ const searchResult = (query) => {
               justifyContent: 'space-between',
             }}
           >
-      <span>
+              <span>
         Found {query} on{' '}
-        <a
-          href={`https://s.taobao.com/search?q=${query}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-        {category}
-        </a>
-        </span>
+                <a
+                  href={`https://s.taobao.com/search?q=${query}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {category}
+                </a>
+              </span>
             <span>{getRandomInt(200, 100)} results</span>
           </div>
         ),
@@ -45,14 +45,13 @@ const Complete = () => {
   }
 
   const onSelect = (value) => {
-    console.log('onSelect', value)
   }
 
   return (
     <AutoComplete
       dropdownMatchSelectWidth={252}
       style={{
-        width: "100%",
+        width: '100%',
       }}
       options={options}
       onSelect={onSelect}

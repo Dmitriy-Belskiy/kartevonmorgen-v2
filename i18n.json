@@ -1,0 +1,21 @@
+{
+  "locales": [
+    "en",
+    "de",
+    "es",
+    "pt",
+    "ru"
+  ],
+  "defaultLocale": "ru",
+  "pages": {
+    "/[[...slug]]": [
+      "home"
+    ],
+    "/m/[...slug]": [
+      "map"
+    ],
+    "/t/[project]": [
+      "tables"
+    ]
+  }
+}
